@@ -5,6 +5,8 @@ import os
 """
 A template library is a library for building complicated strings !
 
+A database is a program that stores and retrieves large amounts of structured data
+
 """
 
 
