@@ -2,12 +2,29 @@ import webapp2
 import utils as U
 import jinja2
 import os
+import sys
+
+sys.path.insert(1, '/home/jaafar/google-cloud-sdk/platform/google_appengine')
+sys.path.insert(1, '/home/jaafar/google-cloud-sdk/platform/google_appengine/lib/yaml/lib')
+sys.path.insert(1, 'lib')
+
+#if 'google' in sys.modules:
+#   del sys.modules['google']
+
+from google.appengine.ext import db
+
+
+
+
+print db.__doc__
+
 """
 A template library is a library for building complicated strings !
 
 A database is a program that stores and retrieves large amounts of structured data
 
 """
+
 
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -177,5 +194,34 @@ class WelcomeHandler(webapp2.RequestHandler):
     def get(self):
         self.response.out.write("Welcome!")
 
+class AsciiHandler(Handler):
+    def get(self):
+        self.render_front()
 
-app = webapp2.WSGIApplication([('/', MainPage),("/fizzbuzz",FizzBuzzHandler),("/rot13",Rot13Handler),("/signup",SignupHandler),("/thanks",ThanksHandler),("/welcome",WelcomeHandler)], debug=True)
+    def render_front(self, title="", art="", error=""):
+        arts = db.GqlQuery("SELECT * FROM Art ORDER BY created DESC ")
+        self.render("front.html", title=title, art=art, error=error, arts=arts)
+
+    def post(self):
+        title = self.request.get("title")
+        art = self.request.get("art")
+
+        if title and art:
+            #self.write("THANKS !")
+            a = Art(title=title, art=art)
+            a.put()
+            self.redirect("/ascii")
+        else:
+            error = "we need both a title and some artwork !"
+            self.render_front(title, art, error)
+
+class Art(db.Model):
+    title = db.StringProperty(required = True)
+    art = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+
+
+class BlogHandler(Handler):
+    pass
+
+app = webapp2.WSGIApplication([('/', MainPage),('/blog',BlogHandler),("/ascii",AsciiHandler),("/fizzbuzz",FizzBuzzHandler),("/rot13",Rot13Handler),("/signup",SignupHandler),("/thanks",ThanksHandler),("/welcome",WelcomeHandler)], debug=True)

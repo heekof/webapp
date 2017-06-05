@@ -120,14 +120,45 @@ db.execute('create table links ' + '(id integer, submitter_id integer, submitted
 for l in links:
     db.execute('insert into links values (?,?,?,?,?,?)',l)
 
-def query():
+def query_old3():
     cursor = db.execute(" select * from links")
     for link_tuple in cursor:
         link = Link(*link_tuple)
         print link.votes
 
 
+# QUIZ - make the function query() return a list of the IDs of the links
+# that were submitted by user 62443 sorted by submission time ascending.
+def query():
+    c = db.execute("select id from links where submitter_id = 62443 order by submitted_time asc ")
+    return [ t[0] for t in c]
 
-print query()
 
 
+# QUIZ - implement the function build_link_index() that creates a python dictionary
+# the maps a link's ID to the link itself
+def build_link_index():
+    index = {}
+    for l in links:
+        index[l.id] = l
+    return index
+
+link_index = build_link_index()
+
+# QUIZ - implement the function link_by_id() that takes a link's ID and returns
+# the Link object itself
+def link_by_id(link_id):
+	return link_index.get(link_id)
+
+# QUIZ - implement the function add_new_link() that both adds a link to the
+# "links" list and updates the link_index dictionary.
+def add_new_link(link):
+    links.append(link)
+    link_index[link.id] = link
+
+
+
+
+if __name__ == "__main__":
+    print query()
+    #print link_by_id(0)
